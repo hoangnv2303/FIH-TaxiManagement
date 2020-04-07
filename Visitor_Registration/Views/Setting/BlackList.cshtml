@@ -1,0 +1,136 @@
+﻿@{
+    ViewBag.Title = "BlackList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var listUser = (List<Visitor_Registration_Data.EF.tbl_BlackList>)ViewBag.BlackList;
+
+}
+@section JsFooter{
+    <script src="~/Content/js/xlsx.core.min.js"></script>
+    <script src="~/Content/js/SettingController/black-list.js"></script>
+    <script src="~/Content/js/SettingController/Tabs/tabs-content.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('ul.tabs li').click(function () {
+                var tab_id = $(this).attr('data-tab');
+                $('ul.tabs li').removeClass('current');
+                $('.tab-content').removeClass('current');
+                $(this).addClass('current');
+                $("#" + tab_id).addClass('current');
+            });
+        });
+    </script>
+}
+<link href="~/Content/css/SettingController/demos.css" rel="stylesheet" />
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fas fa-table"></i>
+        Black List Setting
+    </div>
+    <div class="card-body">
+        <!--chia tab-->
+        <ul class="tabs">
+            <li class="tab-link current" data-tab="tab-1">Single Update</li>
+            <li class="tab-link" data-tab="tab-2">Multiple Update</li>
+        </ul>
+
+        <div id="tab-1" class="tab-content current">
+            <div class="row">
+                <div class="form-group col-md-2">
+                    <label for="visitorName">Visitor Name</label>
+                    <input type="text" class="form-control" id="visitorName">
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="visitorCompany">Company</label>
+                    <input type="text" class="form-control" id="visitorCompany">
+                </div>
+                <div class="form-group col-md-2">
+                    <label for="nationalId">National Id</label>
+                    <input type="text" class="form-control" id="nationalId">
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="reason">Reason</label>
+                    <textarea type="text" class="form-control" id="reason"></textarea>
+                </div>
+                <div class="form-group col-md-3 mt-4">
+                    <div class="row" style="display:flex; justify-content:center">
+                        <div class="col-md-5">
+                            <input type="submit" class="btn-add btn btn-block btn-primary" value="Add" />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="reset" class="btn-reset btn btn-block btn-danger" value="Reset" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tab-2" class="tab-content">
+            <div style="margin-bottom:70px; margin-top:20px">
+                <a id="save_CSV" class="btn btn-primary float-right text-white mr-2">Save</a>
+                <a id="clear_CSV" class="btn btn-danger float-right text-white mr-2">Clear</a>
+                <a id="import_CSV" class="btn btn-success float-right text-white mr-2">Import Excel</a>
+                <a id="download_CSV" class="btn btn-light float-right mr-2"><i class="fas fa-download fa-fw"></i></a>
+                <input type="file" name="filename" id="filename" hidden />
+            </div>
+            <!--Import list CSV-->
+            <div id="employee_table" class="table-responsive">
+            </div>
+            <input type="hidden" id="listVisitor"/>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- DataTables Example -->
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fas fa-table"></i>
+        Black List
+    </div>
+
+    <div class="card-body" style="zoom:90%">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Visitor Name</th>
+                        <th>Company</th>
+                        <th>National Id</th>
+                        <th>Reason For Block</th>
+                        <th>Create By</th>
+                        <th>Create Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.BlackList != null)
+                    {
+                        foreach (var item in listUser)
+                        {
+                            <tr id="@item.NationalId">
+                                <td></td>
+                                <td>@item.VisitorName</td>
+                                <td>@item.CompanyName</td>
+                                <td>@item.NationalId</td>
+                                <td>@item.Reason</td>
+                                <td>@item.CreateBy</td>
+                                <td>@item.CreateDate.ToString("yyyy-MM-dd")</td>
+                                <td style="text-align:center; font-size:1.2rem;">
+                                    <a href="#" data-id="@item.NationalId" class="btn-edit text-primary" style="text-decoration:none">
+                                        <i class="fas fa-fw fa-edit"></i>
+                                    </a> &nbsp;
+                                    <a href="#" data-id="@item.NationalId" class="btn-delete text-danger">
+                                        <i class="fas fa-fw fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

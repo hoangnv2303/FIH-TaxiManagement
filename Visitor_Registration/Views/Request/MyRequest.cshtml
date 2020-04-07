@@ -1,0 +1,189 @@
+﻿
+@{
+    ViewBag.Title = "My Request";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var listRequest = (List<Visitor_Registration_Data.Model.MyRequestModel>)ViewBag.ListRequest;
+}
+@section jsFooter {
+    <script type="text/javascript">
+        $(function () {
+            // incoming date
+            $(".form_datetime").datepicker();
+            $('.form_datetime').on('changeDate', function (ev) {
+                $(this).datepicker('hide');
+            });
+            // outgoing date
+            $(".form_datetime1").datepicker();
+            $('.form_datetime1').on('changeDate', function (ev) {
+                $(this).datepicker('hide');
+            });
+        });
+    </script>
+    <script src="~/Content/js/RequestController/my-request.js"></script>
+}
+@using (Html.BeginForm("Approval", "Approval", FormMethod.Post, new { enctype = "multipart/form-data", @id = "approval" }))
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="col-md-10">
+                <i class="fas fa-table"></i>
+                List My Taxi Requests
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive" style="zoom:90%">
+                <div class="card card-body mb-3">
+                    <div class="row">
+                        @*Confirm date*@
+                        <div class="col-md-5">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>Created Date Form:</label>
+                                    <input class="form-control form_datetime" data-date-format="mm/dd/yyyy">
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Created Date To:</label>
+                                    <input class="form-control form_datetime1" data-date-format="mm/dd/yyyy">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mt-3 offset-3">
+                            <div class="row" style="display:flex;justify-content:center;align-items:center;">
+                                <a class="btn btn-primary" style="color:white" id="btnFilter" value="Filter">
+                                    <i class="fas fa-search-plus"></i>
+                                    Filter
+                                </a>
+                                <a class="btn btn-danger ml-2 mr-2" style="color:white" id="btnClear">
+                                    <i class="fas fa-times"></i>
+                                    Clear
+                                </a>
+                                @if (ViewBag.Delete != "" && ViewBag.Delete != null)
+                                {
+                                    <a class="btn btn-outline-danger btn-secondary ml-2 mr-2" style="color:white" id="btnMultipleDel">
+                                        <i class="fas fa-trash"></i>
+                                        Multiple Delele
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0"
+                       style="table-layout: fixed;word-wrap:break-word;">
+                    <thead>
+                        <tr>
+                            <th style="width: 2rem;">STT</th>
+                            <th>Request Id</th>
+                            <th style="width: 15rem;">Purpose Of Visit</th>
+                            <th>Create Date</th>
+                            <th>Using Date</th>
+                            <th>State</th>
+                            @if (ViewBag.Delete != "" && ViewBag.Delete != null)
+                            {
+                                <th>Requester Id</th>
+                            }
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.ListRequest != null)
+                        {
+                            foreach (var item in listRequest)
+                            {
+                                <tr class="btnDetail" data-id="@item.Id">
+                                    <td></td>
+                                    <td data-id="@item.Id">@item.Id.ToString().Split('-').LastOrDefault()</td>
+                                    <td><div>@item.Purpose</div></td>
+                                    <td>@item.CreateDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@item.ScheduleTime.ToString("yyyy-MM-dd")</td>
+                                    @if (item.Process == 2 && item.State == 1)
+                                    {
+                                        if (item.Result == 0 || item.NoShow == 0)
+                                        {
+                                            <td class="text-primary font-weight-bold">Done</td>
+                                        }
+                                        else
+                                        {
+                                            <td class="text-success font-weight-bold">Approved</td>
+                                        }
+                                    }
+                                    else if (item.State == -1)
+                                    {
+                                        <td class="text-danger font-weight-bold">Rejected</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-black-50 font-weight-bold">
+                                            @((item.Process == 1 && item.State == 0) ? "Pending Level 1" : "Pending Level 2")
+                                        </td>
+                                    }
+                                    @if (ViewBag.Delete != "" && ViewBag.Delete != null)
+                                    {
+                                        <td>@item.EmployeeId</td>
+                                        <td class="text-center" style="font-size:1.2rem">
+                                            <a href="/request-detail/@item.Id/1" class="text-dark" style="text-decoration:none">
+                                                <i class="fas fa-fw fa-info-circle"></i>
+                                            </a> <span>&nbsp;</span>
+                                            <a href="/update-request?id=@item.Id" class="text-primary" style="text-decoration:none">
+                                                <i class="fas fa-fw fa-edit"></i>
+                                            </a> <span>&nbsp;</span>
+                                            <a href="#" data-id="@item.Id" class="btn-delete text-danger ">
+                                                <i class="fas fa-fw fa-trash-alt"></i>
+                                            </a>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td class="text-center">
+                                            <a href="/request-detail/@item.Id/1" class="text-dark" style="text-decoration:none">
+                                                <i class="fas fa-fw fa-info-circle"></i>
+                                            </a>
+                                            @if (item.State == 0 && item.Process == 1)
+                                            {
+                                                <span>&nbsp;</span>
+                                                <a href="/update-request?id=@item.Id" class="text-primary" style="text-decoration:none">
+                                                    <i class="fas fa-fw fa-edit"></i>
+                                                </a> <span>&nbsp;</span>
+                                                <a href="#" class="text-danger btnDelete" data-toggle="modal" data-target="#exampleModal" data-whatever="getbootstrap">
+                                                    <i class="fas fa-fw fa-trash-alt"></i>
+                                                </a>
+                                                @*<button type="button" class="btn btn-primary btnDelete" data-toggle="modal" data-target="#exampleModal" data-whatever="getbootstrap">Open modal</button>*@
+                                                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="exampleModalLabel">The Delete Request Form</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="form-group">
+                                                                    <label for="recipient-name" class="col-form-label">Recipient:</label>
+                                                                    <input type="text" class="form-control" id="recipient-name" disabled>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label for="message-text" class="col-form-label">Reason:</label>
+                                                                    <textarea class="form-control" id="message-text" required></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                <button type="button" class="btn btn-primary" id="btnSubmit" data-id="@item.Id.ToString()">Submit</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+

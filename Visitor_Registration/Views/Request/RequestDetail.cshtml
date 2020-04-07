@@ -1,0 +1,237 @@
+﻿@model List<Visitor_Registration_Data.EF.tbl_Taxi_User_Infor>
+
+@*model Visitor_Registration_Data.Model.RequestInforModel*@
+@{
+    ViewBag.Title = "RequestDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var requestInfor = (List<Visitor_Registration_Data.Model.RequestInforModel>)ViewBag.RequestInfor;
+    var listApprovalInfor = (List<Visitor_Registration_Data.EF.tbl_Taxi_Approval_Infor>)ViewBag.ApprovalInfor;
+    var listCredentials = (List<string>)Session["SESSION_CREDENTIALS"];
+}
+@section jsFooter{
+    <script src="~/Content/js/RequestController/money.js"></script>
+    <script src="~/Content/js/RequestController/request-detail.js"></script>
+}
+<style>
+    .changeSize td > input {
+        font-size: 1.2rem;
+    }
+    .setTime {
+        font-size: 1.2rem;
+    }
+</style>
+<!--Request Information-->
+@using (Html.BeginForm("RequestDetail", "Request", FormMethod.Post, new { enctype = "multipart/form-data", @id = "requestDetail" }))
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas f-table"></i>
+            Visitor Detail Information
+        </div>
+        <div class="card-body" style="font-size:14px">
+            <h5 class="font-weight-light text-light bg-dark pb-1" style="margin-bottom: 0px;">Approval Information</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped table-sm" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Approver Id</th>
+                            <th>Department Name</th>
+                            <th>Remark</th>
+                            <th>Datetime</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.ApprovalInfor != null)
+                        {
+                            foreach (var item in listApprovalInfor)
+                            {
+                                <tr>
+                                    <td>@item.ApproverId</td>
+                                    <td>@item.DepartmentName</td>
+                                    <td>@item.Remark</td>
+                                    <td>@item.UpdateDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@((item.State == 0) ? "Undecided" : (item.State == 1 ? "Approved" : "Rejected"))</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <br />
+            <h5 class="font-weight-light text-light bg-dark pb-1">Request Information</h5>
+            <div class="row">
+                <div class="col-md-3">Request Id: <b class="text-danger"><b id="requestId" data-id="@requestInfor[0].Id.ToString()">@requestInfor[0].Id.ToString().Split('-').LastOrDefault()</b></b></div>
+                <div class="col-md-3">Requester Name: <b>@requestInfor[0].FullName</b></div>
+                <div class="col-md-3">Department: <b>@requestInfor[0].DeparmentName</b></div>
+                <div class="col-md-3">Work mail: <b>@requestInfor[0].Email</b></div>
+                <!--Type of request-->
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-3">Using Date: <b>@requestInfor[0].ScheduleTime.ToString("yyyy/MM/dd")</b></div>
+                <div class="col-md-3">Pickup: <b>@requestInfor[0].Pickup</b></div>
+                <div class="col-md-3">Dropoff 1: <b>@requestInfor[0].DropOff1</b></div>
+                <div class="col-md-3">Dropoff 2: <b>@requestInfor[0].DropOff2</b></div>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-3">Register Date: <b>@requestInfor[0].CreateDate.GetValueOrDefault().ToString("yyyy/MM/dd")</b></div>
+                <div class="col-md-9">Purpose Of Using: <b>@requestInfor[0].Purpose</b></div>
+            </div>
+            <!--Visitor Detail-->
+            <br />
+            @*<div class="bg-dark">
+                    <h5 class="font-weight-light text-light mb-4">Visitor Information</h5>
+                </div>*@
+            <h5 class="font-weight-light text-light bg-dark pb-1">Visitor Information</h5>
+            <table class="table table-bordered table-hover table-striped table-sm" id="dataTable" width="100%" cellspacing="0" style="zoom:75%; font-size:1.2rem">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Employee Id</th>
+                        <th>SLM Name</th>
+                        <th>Swipe Time</th>
+                        <th>Card Number</th>
+                        @if (listCredentials.Contains("CONFIRM") && listApprovalInfor.SingleOrDefault(x => x.State == 0 || x.State == -1) == null)
+                        {
+                            <th>Cost</th>
+                            <th>Car Number</th>
+                            <th>Ref Number</th>
+                            <th>Remark</th>
+                        }
+                        <th>Process</th>
+                        <th>Swipe Card</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.RequestInfor != null)
+                    {
+                        foreach (var item in requestInfor.Select((value, i) => new { i, value }))
+                        {
+                            <tr class="changeSize">
+                                @Html.HiddenFor(model => model[item.i].Taxi_Request_Infor_Id, new { @Value = @requestInfor[0].Id })
+                                @Html.HiddenFor(model => model[item.i].EmployeeId, new { @Value = item.value.User_EmployeeId })
+                                @Html.HiddenFor(model => model[item.i].Process, new { @Value = item.value.Process })
+                                @Html.HiddenFor(model => model[item.i].CreateBy, new { @Value = item.value.CreateBy })
+                                <td></td>
+                                <td>@item.value.Name</td>
+                                <td>@item.value.User_EmployeeId</td>
+                                <td>@item.value.SLM_Name</td>
+                                <td>
+                                    @if (listCredentials.Contains("CONFIRM") && listApprovalInfor.SingleOrDefault(x => x.State == 0 || x.State == -1) == null && item.value.CardNumber != null && item.value.SwipeTime == null)
+                                    {
+
+                                        <div class="input-group">
+                                            @Html.TextBoxFor(model => model[item.i].SwipeTime, new { @class = "form-control setTime", @tabindex = 100 + item.i, @Value = @item.value.SwipeTime.GetValueOrDefault().ToString("HH:mm") })
+                                            <div class="input-group-prepend">
+                                                <span class="btn text-secondary btnSetTime" data-id="@item.value.User_EmployeeId">
+                                                    <i class="fas fa-clock" style="font-size: 150%;"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(model => model[item.i].SwipeTime, new { @class = "form-control setTime", @tabindex = 100 + item.i, @Value = @item.value.SwipeTime.GetValueOrDefault().ToString("HH:mm"), @readonly = "readonly" })
+                                    }
+                                </td>
+                                <td>
+                                    @Html.TextBoxFor(model => model[item.i].CardNumber, new { @class = "form-control", @type = "number", @tabindex = 100 + item.i, @Value = item.value.CardNumber })
+                                </td>
+                                @if (listCredentials.Contains("CONFIRM") && listApprovalInfor.SingleOrDefault(x => x.State == 0 || x.State == -1) == null)
+                                {
+                                    <td>
+                                        @Html.TextBoxFor(model => model[item.i].Cost, new
+                                       {
+                                           @class = "form-control amount",
+                                           @type = "string",
+                                           @tabindex = 100 + item.i,
+                                           @Value = (item.value.Cost != null) ? string.Format(new System.Globalization.CultureInfo("en-US"), "{0:#,##0}", item.value.Cost.GetValueOrDefault()) : ""
+                                           //@Value = item.value.Cost
+                                           //@Value = item.value.Cost.GetValueOrDefault().ToString().Substring(0, item.value.Cost.GetValueOrDefault().ToString().IndexOf('.'))
+                                       })
+                                    </td>
+                                    <td>
+                                        @Html.TextBoxFor(model => model[item.i].CarNumber, new { @class = "form-control", @type = "number", @tabindex = 100 + item.i, @Value = item.value.CarNumber })
+                                    </td>
+                                    <td>
+                                        <div style="display:-webkit-inline-box;">
+                                            @Html.TextBoxFor(model => model[item.i].RefNumber, new { @style = "font-size:1.2rem", @class = "form-control", @type = "number", @tabindex = 100 + item.i, @Value = item.value.RefNumber })
+                                            <div style="visibility:hidden;">asdfasdf</div> <!--For width in column-->
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @Html.TextAreaFor(model => model[item.i].Remark, new { @class = "form-control", @tabindex = 100 + item.i, @placeholder = item.value.User_Remark })
+                                    </td>
+                                }
+                                <td class="text-center"><b> @((item.value.Process == 0) ? "" : item.value.Process.ToString())</b></td>
+                                <!--For security confirm swipe time-->
+                                <td class="text-secondary text-center" style="display:flex;vertical-align:central;">
+                                    @if (listCredentials.Contains("SEC_CONFIRM") && listApprovalInfor.SingleOrDefault(x => x.State == 0 || x.State == -1) == null && item.value.CardNumber == null)
+                                    {
+                                        <span class="btn text-primary btnSwipe" data-id="@item.value.User_EmployeeId" style="margin-top:0.5rem">
+                                            <i class="fas fa-credit-card" style="font-size: 150%;"></i>
+                                        </span>
+                                    }
+                                    @if (listCredentials.Contains("CONFIRM") && listApprovalInfor.SingleOrDefault(x => x.State == 0 || x.State == -1) == null && item.value.CardNumber == null)
+                                    {
+                                        <span class="btn text-warning btnLendCard" data-id="@item.value.User_EmployeeId" style="margin-top:0.5rem">
+                                            <i class="fas fa-calendar-plus" style="font-size: 150%;"></i>
+                                        </span>
+                                    }
+                                    @if ((listCredentials.Contains("SEC_CONFIRM") || listCredentials.Contains("CONFIRM")) && item.value.CardNumber == null && listApprovalInfor.SingleOrDefault(x => x.State == 0 || x.State == -1) == null)
+                                    {
+                                        <span class="btn text-danger btnClear_Swipe" data-id="@item.value.User_EmployeeId" style="margin-top:0.5rem">
+                                            <i class="fas fa-redo-alt" style="font-size: 150%;"></i>
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            <div class="row" style="display:flex; justify-content:center;align-items:center;">
+                @if (listApprovalInfor.SingleOrDefault(x => x.State == 0 || x.State == -1) == null && listCredentials.Contains("CONFIRM") || listCredentials.Contains("SEC_CONFIRM"))
+                {
+                    <div class="col-2">
+                        <input type="submit" class="btn btn-block btn-primary" value="Submit" id="submit" />
+                    </div>
+                }
+                <div class="col-2">
+                    <a class="btn-secondary btn align-content-lg-end" ref="javascript:void(0);" onclick="history.go(-1);"
+                       style="width: 100%;color: white;">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!--Approval Detail Information-->
+@if (ViewBag.ApprovalPermistion && listApprovalInfor.SingleOrDefault(x => x.State == 0) != null && ViewBag.NationalId == "1")
+
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-plus-square"></i>
+            Approval Detail
+        </div>
+        @using (Html.BeginForm("Index", "Requests", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <div class="card-body">
+                <div style="display:flex; justify-content:center; align-content:center; vertical-align:middle; font-size:20px">
+                    <textarea rows="2" class=" col-md-4 form-control" id="comment"></textarea>
+                    <div class="col-md-1"></div>
+                    <div class="row col-md-3" style="display:flex; justify-content:center; align-content:center;">
+                        <input type="button" class="btn btn-block btn-primary col-md-5 btnApproval" value="Approve" data-type="1" data-process="@requestInfor[0].Approval_Process" />
+                        <div class="col-md-1"></div>
+                        <input type="button" class="btn btn-block btn-danger col-md-5 btnApproval" value="Reject" data-type="-1" data-process="@requestInfor[0].Approval_Process" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+

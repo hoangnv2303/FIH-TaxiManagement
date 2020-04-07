@@ -1,0 +1,81 @@
+﻿@model Visitor_Registration_Data.EF.tbl_User
+@{
+    ViewBag.Title = "Setting Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var listDeputy = (List<Visitor_Registration_Data.EF.tbl_User>)ViewBag.ListDeputy;
+}
+@section jsFooter{
+    <script src="~/Content/js/SettingController/add-user.js"></script>
+}
+<link href="~/Content/css/loading.css" rel="stylesheet" />
+<div id="divLoader" style="display:none"></div>
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fas fa-table"></i>
+        Deputy Setting
+    </div>
+    <div class="card-body">
+        @if (((List<string>)Session["SESSION_CREDENTIALS"]).Contains("CHANGE_DEPUTY"))
+        {
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="inputDepartment">Department</label>
+                    <div>
+                        @Html.DropDownList("Value", (IEnumerable<SelectListItem>)ViewBag.GroupList, (ViewBag.Department == "" || ViewBag.Department == null) ? "" : (string)ViewBag.Department, new { @class = "form-control", @id = "inputDepartment" })
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="headId">Head Of Fuction Name</label>
+                    <div>
+                        <input class="form-control" type="text" name="name" value="@ViewBag.HeadName" disabled />
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="row">
+            <div class="form-group col-md-6">
+                <label for="inputEmployeeId">Employee Id</label>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        @Html.EditorFor(model => model.EmployeeId, new { htmlAttributes = new { @class = "form-control", @id = "inputEmployeeId" } })
+                        @Html.ValidationMessageFor(model => model.EmployeeId, "", new { @class = "text-danger" })
+                    </div>
+                    <input type="button" id="btnCheck" class="btn btn-success col-md-2" name="name" value="Add" />
+                </div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Employee Id</th>
+                        <th>Full Name</th>
+                        <th>Work Email</th>
+                        <th>Job Title</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.listDeputy != null)
+                    {
+                        foreach (var item in listDeputy)
+                        {
+                            <tr>
+                                <td>@item.EmployeeId</td>
+                                <td>@item.FullName</td>
+                                <td>@item.Email</td>
+                                <td>@item.JobTitle</td>
+                                <td style="font-size:1.2rem">
+                                    <a href="#" data-id="@item.EmployeeId" class="btn-delete text-danger">
+                                        <i class="fas fa-fw fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

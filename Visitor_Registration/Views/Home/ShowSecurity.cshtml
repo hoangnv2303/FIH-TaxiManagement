@@ -1,0 +1,25 @@
+﻿@{
+    ViewBag.Title = "ShowSecurity";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section JsFooter{
+    <script>
+        $(document).ready(function () {
+            // Load default type = 1
+            $("#divLoader").show();
+            $.ajax({
+                url: "/Home/ShowListRequest",
+                data: { type: 1 },
+                contentType: 'application/html; charset=utf-8',
+                type: "GET",
+                dataType: 'html',
+                success: function (response) {
+                    $('#loadListRequest').html(response);
+                    $("#divLoader").fadeOut(300);
+                }
+            });
+        });
+    </script>
+}
+<div id="loadListRequest">
+</div>

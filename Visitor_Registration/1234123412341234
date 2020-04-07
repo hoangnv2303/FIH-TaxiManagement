@@ -1,0 +1,255 @@
+@*@model Visitor_Registration.Models.VisitorModel*@
+@model Visitor_Registration_Data.Model.RequestInforModel
+@{
+    ViewBag.Title = "RequestDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var requestInfor = (List<Visitor_Registration_Data.Model.RequestInforModel>)ViewBag.RequestInfor;
+    var listApprovalInfor = (List<Visitor_Registration_Data.EF.tbl_Approval>)ViewBag.ApprovalInfor;
+}
+@section jsFooter{
+    <script src="~/Content/js/RequestController/request-detail.js"></script>
+}
+
+
+<!--Request Information-->
+@using (Html.BeginForm("RequestDetail", "Request", FormMethod.Post, new { enctype = "multipart/form-data", @id = "approval" }))
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas f-table"></i>
+            Request Information
+        </div>
+        <div class="card-body" style="font-size:14px">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped table-sm" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Approver Id</th>
+                            <th>Department Name</th>
+                            <th>Remark</th>
+                            <th>Datetime</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.ApprovalInfor != null)
+                        {
+                            foreach (var item in listApprovalInfor)
+                            {
+                                <tr>
+                                    <td>@item.ApproverId</td>
+                                    <td>@item.DepartmentName</td>
+                                    <td>@item.Remark</td>
+                                    <td>@item.UpdateDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@((item.State == 0) ? "Undecided" : (item.State == 1 ? "Approved" : "Rejected"))</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-3">Request Id: <b class="text-danger"><b>@requestInfor[0].Id</b></b></div>
+                <div class="col-md-3">Requester Name: <b>@requestInfor[0].FullName</b></div>
+                <div class="col-md-3">Department: <b>@requestInfor[0].DeparmentName</b></div>
+                <div class="col-md-3">Work mail: <b>@requestInfor[0].Email</b></div>
+                <!--Type of request-->
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-3">Purpose Of Visit: <b>@requestInfor[0].PurposeVisit</b></div>
+                <div class="col-md-3">Incoming Date: <b>@requestInfor[0].IncommingDate.ToString("yyyy/MM/dd")</b></div>
+                <div class="col-md-3">Outgoing Date: <b>@requestInfor[0].OutgoingDate.ToString("yyyy/MM/dd")</b></div>
+                <div class="col-md-3">Visitor Type: <b>@requestInfor[0].Type</b></div>
+            </div>
+            <!--Visitor Detail-->
+            <hr />
+            <label>Personal Information</label>
+            <table class="table table-bordered table-hover table-striped table-sm" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Visitor Name</th>
+                        <th>National Id</th>
+                        <th>Company</th>
+                        <th>Badge</th>
+                        @if (@requestInfor[0].Type == "Visitor")
+                        {
+                            <th>Tem</th>
+                            <th>Meal Card</th>
+                            <th>Package</th>
+                        }
+                        else
+                        {
+                            <th>Access</th>
+                        }
+                        <th>Remark</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.RequestInfor != null)
+                    {
+                        foreach (var item in requestInfor.Select((value, i) => new { i, value }))
+                        {
+                            <tr>
+                                @Html.HiddenFor(model => model.visitor[item.i].Request_Infor_Id, new { @Value = @requestInfor[0].Id })
+                                @Html.HiddenFor(model => model.visitor[item.i].NationalId, new { @Value = item.value.NationalId })
+                                <td></td>
+                                <td>@item.value.VisitorName</td>
+                                <td>@item.value.NationalId</td>
+                                <td>@item.value.CompanyName</td>
+
+                                <td>
+                                    <div class="input-group mb-2 mr-sm-2">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">
+                                                @if (item.value.BadgeReturn == true)
+                                                {
+                                                    @Html.CheckBoxFor(model => model.visitor[item.i].BadgeReturn, new { @class = "form-control", @style = "font-size:6px; width:18px", @checked = true })
+                                                }
+                                                else
+                                                {
+                                                    @Html.CheckBoxFor(model => model.visitor[item.i].BadgeReturn, new { @class = "form-control", @style = "font-size:6px; width:18px", @unchecked = true })
+                                                }
+                                            </div>
+                                        </div>
+                                        @Html.TextBoxFor(model => model.visitor[item.i].Badge, new { @class = "form-control", @type = "number", @tabindex = 100 + item.i, @Value = item.value.Badge })
+                                    </div>
+                                </td>
+                                @if (@requestInfor[0].Type == "Visitor")
+                                {
+                                    <td>
+                                        @Html.TextBoxFor(model => model.visitor[item.i].Tem, new { @class = "form-control", @type="number", @tabindex = 100+item.i , @Value = item.value.Tem})
+                                    </td>
+                                    <td>
+                                        <div class="input-group mb-2 mr-sm-2">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">
+                                                    @if (item.value.MealCardReturn == true)
+                                                    {
+                                                        @Html.CheckBoxFor(model => model.visitor[item.i].MealCardReturn, new { @class = "form-control", @style = "font-size:6px; width:18px", @checked = true})
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.CheckBoxFor(model => model.visitor[item.i].MealCardReturn, new { @class = "form-control", @style = "font-size:6px; width:18px", @unchecked = true})
+                                                    }
+                                                </div>
+                                            </div>
+                                            @Html.TextBoxFor(model => model.visitor[item.i].MealCard, new { @class = "form-control", @type="number", @tabindex = 100+item.i , @Value = item.value.MealCard})
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (item.value.Package == true)
+                                        {
+                                            @Html.CheckBoxFor(model => model.visitor[item.i].Package, new { @class = "form-control", @style = "font-size:6px", @tabindex = 100 + item.i, @checked = true })
+                                        }
+                                        else
+                                        {
+                                            @Html.CheckBoxFor(model => model.visitor[item.i].Package, new { @class = "form-control", @style = "font-size:6px", @tabindex = 100 + item.i, @unchecked = true })
+                                        }
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td>
+                                        <div class="input-group mb-2 mr-sm-2">
+                                            <div class="input-group-prepend">
+                                                <div class="input-group-text">
+                                                    @if (item.value.AccessReturn == true)
+                                                    {
+                                                        @Html.CheckBoxFor(model => model.visitor[item.i].AccessReturn, new { @class = "form-control", @style = "font-size:6px; width:18px", @checked = true })
+                                                    }
+                                                    else
+                                                    {
+                                                        @Html.CheckBoxFor(model => model.visitor[item.i].AccessReturn, new { @class = "form-control", @style = "font-size:6px; width:18px", @unchecked = true })
+                                                    }
+                                                </div>
+                                            </div>
+                                            @Html.TextBoxFor(model => model.visitor[item.i].Access, new { @class = "form-control", @type="number", @tabindex = 100+item.i, @Value = item.value.Access })
+                                        </div>
+                                    </td>
+                                }
+                                <td>@Html.TextAreaFor(model => model.visitor[item.i].Remark, new { @class = "form-control", @tabindex = 100+item.i , @placeholder = item.value.Remark})</td>
+                                <td>
+                                    <div class="btn btn-block btn-success">
+                                        <i class="fas fa-check-circle fa-fw"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+            @*<div class="row" style="display:flex; justify-content: center; vertical-align: central; text-align:center">
+                    <div class="btn btn-block btn-primary col-md-1">
+                        <i class="fas fa-user-edit fa-fw"></i>
+                    </div>
+                    <div></div>
+                    <div class="btn btn-block btn-danger col-md-1 ml-3">
+                        <i class="fas fa-user-edit fa-fw"></i>
+                    </div>
+                </div>*@
+
+            <div class="row" style="display:flex; justify-content:center">
+                <div class="col-2">
+                    <input type="submit" class="btn btn-block btn-primary" value="Submit" />
+                </div>
+                <div class="col-2">
+                    <input type="reset" class="btn btn-block btn-danger" value="Reset" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+
+<!--Approval Detail Information-->
+@if (ViewBag.ApprovalPermistion)
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-plus-square"></i>
+            Approval Detail
+        </div>
+        @using (Html.BeginForm("Index", "Requests", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <div class="card-body">
+                <div style="display:flex; justify-content:center; align-content:center; vertical-align:middle; font-size:20px">
+                    <textarea rows="2" class=" col-md-4 form-control" id="comment"></textarea>
+                    <div class="col-md-1"></div>
+                    <div class="row col-md-3" style="display:flex; justify-content:center; align-content:center;">
+                        <input type="button" class="btn btn-block btn-primary col-md-5 btnApproval" value="Approve" data-type="1" />
+                        <div class="col-md-1"></div>
+                        <input type="button" class="btn btn-block btn-danger col-md-5 btnApproval" value="Reject" data-type="-1" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+
+<!--Approval Detail Information-->
+@*<div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-plus-square"></i>
+            Approval Detail
+        </div>
+        @using (Html.BeginForm("Index", "Requests", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            <div class="card-body">
+                <div style="display:flex; justify-content:center; align-content:center; vertical-align:middle; font-size:20px">
+                    <textarea rows="2" class=" col-md-4 form-control" id="comment"></textarea>
+                    <div class="col-md-1"></div>
+                    <div class="row col-md-3" style="display:flex; justify-content:center; align-content:center;">
+                        <input type="button" class="btn btn-block btn-primary col-md-5 btnApproval" value="Approve" data-type="1" />
+                        <div class="col-md-1"></div>
+                        <input type="button" class="btn btn-block btn-danger col-md-5 btnApproval" value="Reject" data-type="-1" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>*@

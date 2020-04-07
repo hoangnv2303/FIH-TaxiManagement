@@ -1,0 +1,170 @@
+﻿
+@{
+    ViewBag.Title = "Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var listReportDaily = (List<Visitor_Registration_Data.Model.ReportModel>)ViewBag.ListReportDaily;
+
+}
+
+@section JsFooter{
+    <script type="text/javascript">
+        $(function () {
+            // incoming date
+            $(".form_datetime").datepicker();
+            $('.form_datetime').on('changeDate', function (ev) {
+                $(this).datepicker('hide');
+            });
+            // outgoing date
+            $(".form_datetime1").datepicker();
+            $('.form_datetime1').on('changeDate', function (ev) {
+                $(this).datepicker('hide');
+            });
+        });
+    </script>
+
+    <script src="~/Content/js/DataTables/dataTables.buttons.min.js"></script>
+    <script src="~/Content/js/jszip.min.js"></script>
+    <script src="~/Content/js/buttons.html5.min.js"></script>
+
+    <script src="~/Content/js/dataTables.fixedColumns.min.js"></script>
+    <script src="~/Content/js/ReportController/Report.js"></script>
+}
+@*Infor confirmation*@
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fas fa-table"></i>
+        Report Information
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <div class="card card-body mb-3">
+                <div class="row">
+                    @*Confirm date*@
+                    <div class="col-md-5">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label>Form(Using Date):</label>
+                                <input class="form-control form_datetime" data-date-format="mm/dd/yyyy">
+                            </div>
+                            <div>
+                                <label>To(Using Date):</label>
+                                <input class="form-control form_datetime1" data-date-format="mm/dd/yyyy">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="row">
+                            <div>
+                                <label>Department</label>
+                                @Html.DropDownList("Value", (IEnumerable<SelectListItem>)ViewBag.GroupList, (ViewBag.Department == "" || ViewBag.Department == null) ? "" : (string)ViewBag.Department, new { @class = "form-control", @id = "selectDepartment" , @name = "requester.Department", data_val = "true" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mt-3">
+                        <div class="row" style="display:flex;justify-content:center;align-items:center;">
+                            <a class="btn btn-primary" style="color:white" id="btnFilter" value="Filter">
+                                <i class="fas fa-search-plus"></i>
+                                Filter
+                            </a>
+                            <a class="btn btn-danger ml-2 mr-2" style="color:white" id="btnClear">
+                                <i class="fas fa-times"></i>
+                                Clear
+                            </a>
+                            <a class="btn btn-success" style="color:white" id="btnExport">
+                                <i class="fas fa-file-excel text-gray-400"></i>
+                                Export
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="width: 100%;overflow-x: auto;white-space: nowrap;">
+                <table class="table table-bordered table-hover table-striped table-sm" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>User Name</th>
+                            <th>Employee ID</th>
+                            <th>Department Name</th>
+                            <th>SLM Name</th>
+                            <th>Function's Head</th>
+                            <th>Create Date</th>
+                            <th>Using Date</th>
+                            <th>Bussiness Reason</th>
+                            <th>Pickup</th>
+                            <th>Dropoff 1</th>
+                            <th>Dropoff 2</th>
+                            <th>Swipe Time</th>
+                            <th>Card Number</th>
+                            <th>Cost</th>
+                            <th>Car Number</th>
+                            <th>Ref Number</th>
+                            <th>Remark</th>
+                            <th>Requester Name</th>
+                            <th>Request Remark</th>
+                            <th>Request Id</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.listReportDaily != null)
+                        {
+                            var stt = 1;
+                            foreach (var item in listReportDaily)
+                            {
+                        <tr>
+                            <td>@stt</td>
+                            <td>@item.Name</td>
+                            <td>@item.EmployeeId</td>
+                            <td>@item.DeparmentName</td>
+                            <td>@item.SLM_Name</td>
+                            <td>@item.Head</td>
+                            <td>@(item.CreateDate.HasValue ? item.CreateDate.Value.ToString("yyyy-MM-dd HH:mm") : "")</td>
+                            <td>@item.ScheduleTime.ToString("yyyy-MM-dd")</td>
+                            <td>@item.Purpose</td>
+                            <td>@item.Pickup</td>
+                            <td>@item.DropOff1</td>
+                            <td>@item.DropOff2</td>
+                            <td>@(item.SwipeTime.HasValue ? item.SwipeTime.Value.ToString("yyyy-MM-dd HH:mm") : "")</td>
+                            <td>@item.CardNumber</td>
+                            <td>@((item.Cost != null) ? string.Format(new System.Globalization.CultureInfo("en-US"), "{0:#,##0}", item.Cost.GetValueOrDefault()) : "")</td>
+                            <td>@item.CarNumber</td>
+                            <td>@item.RefNumber</td>
+                            <td>@item.User_Remark</td>
+                            <td>@item.Request_EmployeeId</td>
+                            <td>@item.Request_Remark</td>
+                            <td>@item.Id.ToString().Split('-').LastOrDefault()</td>
+                            @{stt = stt + 1;}
+                        </tr>
+                            }
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th>#</th>
+                            <th>User Name</th>
+                            <th>Employee ID</th>
+                            <th>Department Name</th>
+                            <th>SLM Name</th>
+                            <th>Function's Head</th>
+                            <th>Create Date</th>
+                            <th>Using Date</th>
+                            <th>Bussiness Reason</th>
+                            <th>Pickup</th>
+                            <th>Dropoff 1</th>
+                            <th>Dropoff 2</th>
+                            <th>Swipe Time</th>
+                            <th>Card Number</th>
+                            <th>Cost</th>
+                            <th>Car Number</th>
+                            <th>Ref Number</th>
+                            <th>Remark</th>
+                            <th>Requester Name</th>
+                            <th>Request Remark</th>
+                            <th>Request Id</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

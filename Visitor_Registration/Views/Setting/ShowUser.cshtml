@@ -1,0 +1,53 @@
+﻿@{
+    ViewBag.Title = "ShowUser";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var listUser = (List<Visitor_Registration_Data.Model.EmployeeModelS>)ViewBag.ListUser;
+}
+@section JsFooter{
+    <script src="~/Content/js/SettingController/user-permission.js"></script>
+}
+
+<!-- DataTables Example -->
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fas fa-table"></i>
+        User Role Setting
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Employee Id</th>
+                        <th>Full Name</th>
+                        <th>User Role</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.listUser != null)
+                    {
+                        foreach (var item in listUser)
+                        {
+                            <tr class="btnDetail" data-id="@item.EmployeeId">
+                                <td></td>
+                                <td>@item.EmployeeId</td>
+                                <td>@item.FullName</td>
+                                <td>@Html.DropDownList("Value", (IEnumerable<SelectListItem>)ViewBag.GroupList, @item.Name, new { @class = "form-control", @id = @item.EmployeeId+@item.Name })</td>
+                                <td style="text-align:center; font-size:1.2rem">
+                                    <a href="#" data-id="@item.EmployeeId" data-role="@item.Name"  class="btnUpdate text-primary" data-type="update" style="text-decoration:none">
+                                        <i class="fas fa-fw fa-plus-circle"></i>
+                                    </a> &nbsp;
+                                    <a href="#" data-id="@item.EmployeeId" data-role="@item.Name" class="btnUpdate text-danger" date-type="delete">
+                                        <i class="fas fa-fw fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

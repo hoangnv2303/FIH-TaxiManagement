@@ -1,0 +1,55 @@
+﻿@{
+    var listRequests = (List<Visitor_Registration_Data.Model.RequestInforModel>)ViewBag.listRequests;
+}
+
+<script src="~/Content/js/dataTables.buttons.min.js"></script>
+<script src="~/Content/js/HomeController/show-listRequest.js"></script>
+<link href="~/Content/js/buttons.dataTables.min.css" rel="stylesheet" />
+
+<div class="card mb-3">
+    <div class="card-header">
+        <div class="col-md-10">
+            <i class="fas fa-table"></i>
+            <b>List @ViewBag.TypeName</b>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0"
+                   style="zoom:95%;table-layout: fixed;word-wrap:break-word;">
+                <thead>
+                    <tr>
+                        <th style="width:1.5rem">#</th>
+                        <th style="width:5rem;">Name</th>   
+                        <th style="width:5rem;">Employee Id</th>
+                        <th style="width:6rem;">Purpose</th>
+                        <th style="width:5rem;">Using Date</th>
+                        <th style="width:5rem;">Create Date</th>
+                        <th style="width:5rem;">Requester Name</th>
+                        <th style="width:5rem;">Dept.</th>
+                        <th style="width:4rem;">Request Id</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.listRequests != null)
+                    {
+                        foreach (var item in listRequests)
+                        {
+                            <tr class="btnDetail @((@ViewBag.TypeName == "requests closed") ? (item.User_Remark == "No Use" ? "table-secondary" : "") : "")" data-id="@item.Id" data-nationalid="@item.User_EmployeeId">
+                                <td></td>
+                                <td>@item.Name</td>
+                                <td>@item.User_EmployeeId</td>
+                                <td>@item.Purpose</td>
+                                <td>@item.ScheduleTime.ToString("yyyy/MM/dd")</td>
+                                <td>@item.CreateDate.GetValueOrDefault().ToString("yyyy/MM/dd")</td>
+                                <td>@item.FullName</td>
+                                <td>@item.DeparmentName</td>
+                                <td><a href="/request-detail/@item.Id/1">@item.Id.ToString().Split('-').LastOrDefault()</a></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

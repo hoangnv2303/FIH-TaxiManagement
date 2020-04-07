@@ -1,0 +1,181 @@
+﻿@model List<Visitor_Registration_Data.Model.RequestInforModel>
+@{
+    ViewBag.Title = "UpdateRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+@section jsFooter{
+    <script src="~/Content/js/RequestController/request-update.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            // arrival date
+            var date1 = $(".form_datetime").val();
+            var date2 = $(".form_datetime1").val();
+
+            $(".form_datetime").datepicker().datepicker("setDate", new Date(date1));
+
+            $('.form_datetime').on('changeDate', function (ev) {
+                $(this).datepicker('hide');
+            });
+            // outgoing date
+            $(".form_datetime1").datepicker().datepicker("setDate", new Date(date2));
+            $('.form_datetime1').on('changeDate', function (ev) {
+                $(this).datepicker('hide');
+            });
+        });
+    </script>
+}
+@using (Html.BeginForm("UpdateRequest", "Request", FormMethod.Post, new { onsubmit = "showLoader(this)", enctype = "multipart/form-data", @id = "updateRequest" }))
+{
+    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-plus-square"></i>
+            Update Request
+        </div>
+        <div class="card-body">
+            <div class="form-horizontal">
+                <div class="alert alert-danger" role="alert" id="alertError" style="display:none;">
+                </div>
+                <!--Request information-->
+                <h5 class="font-weight-light">Request Information</h5>
+                <hr class="mt-0" />
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="idRequests">Request Id</label>
+                        <input type="text" value="@Model[0].Id.ToString().Split('-').LastOrDefault()" data-id="@Model[0].Id" class="form-control" id="idRequests" readonly>
+                        @Html.HiddenFor(model => model[0].Id)
+                        <!--for check national id -->
+                        <input type="hidden" id="checkNationalId" value="true">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Using date: <span class="text-danger">(*)</span></label>
+                        @Html.EditorFor(model => model[0].ScheduleTime, new { htmlAttributes = new { @class = "form-control form_datetime" } })
+                    </div>
+                </div>
+
+                <!--Pick up information-->
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="idRequests">Pickup: <span class="text-danger">(*)</span></label>
+                        <div class="input-group mb-3">
+                            @Html.EditorFor(model => model[0].Pickup, new { htmlAttributes = new { @class = "form-control", @required = "true" } })
+                            <div class="input-group-append btnFushan">
+                                <span class="input-group-text">
+                                    <i class="far fa-building"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <label for="idRequests">DropOff 1: <span class="text-danger">(*)</span></label>
+                        <div class="input-group mb-3">
+                            @Html.EditorFor(model => model[0].DropOff1, new { htmlAttributes = new { @class = "form-control", @required = "true" } })
+                            <div class="input-group-append btnFushan">
+                                <span class="input-group-text">
+                                    <i class="far fa-building"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <label>DropOff 2:</label>
+                        <div class="input-group mb-3">
+                            @Html.EditorFor(model => model[0].DropOff2, new { htmlAttributes = new { @class = "form-control" } })
+                            <div class="input-group-append btnFushan">
+                                <span class="input-group-text">
+                                    <i class="far fa-building"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Purpose and remark-->
+                <div class="row">
+                    <div class="col-md-6 mt-2">
+                        <label class="col-md-12 pl-0">Purpose: <span class="text-danger">(*) </span><span class="btnCountDown text-secondary">150</span></label>
+                        @Html.TextAreaFor(model => model[0].Purpose, new { @class = "form-control", @id = "inputPurposeVisit", @required = "true", @style = "max-width: 100%;width: 300%; height: 2.5rem;" })
+                        @Html.ValidationMessageFor(model => model[0].Purpose, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <label class="col-md-12 pl-0">Remark: <span class="btnCountDown1 text-secondary">150</span></label>
+                        @Html.TextAreaFor(model => model[0].Remark, new { @class = "form-control", @id = "inputRemark123", @style = "max-width: 100%;width: 300%; height: 2.5rem;" })
+                        @Html.ValidationMessageFor(model => model[0].Remark, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <!--Visitor information-->
+                <br />
+                <h5 class="font-weight-light">User Information</h5>
+                <hr class="mt-0" />
+                <div style="margin-bottom: 70px;">
+                    <a id="add_row" class="btn btn-success float-right text-white">Add New Visitor</a>
+                </div>
+                <div id="singleRow">
+                    <div class="form-row clearfix">
+                        <div class="col-md-12 table-responsive">
+                            <table class="table table-bordered table-hover table-striped table-sm" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th class="text-center">
+                                            Full Name <span class="text-danger">(*)</span>
+                                        </th>
+                                        <th class="text-center">
+                                            Employee Id <span class="text-danger">(*)</span>
+                                        </th>
+                                        <th class="text-center">
+                                            SLM Name <span class="text-danger">(*)</span>
+                                        </th>
+                                        <th>Remark</th>
+                                        <th class="text-center" style="border-top: 1px solid #ffffff; border-right: 1px solid #ffffff;">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Select((value, i) => new { i, value }))
+                                    {
+                                        <tr style="font-size:0px" id="addr0" data-id="0" class="hidden">
+                                            <td style="font-size:1rem">@(item.i + 1)</td>
+                                            <td data-name="VisitorName">
+                                                @Model[item.i].Name
+                                                @Html.TextBoxFor(model => model[item.i].Name, new { @id = "inputNameBox", @class = "form-control", @style = "font-size:1rem", @required = "required" })
+                                            </td>
+                                            <td data-name="NationalId" data-id="@Model[item.i].User_EmployeeId">
+                                                @Html.TextBoxFor(model => model[item.i].User_EmployeeId, new { @id = "inputNationalId", @class = "form-control", @style = "font-size:1rem", @required = "required" })
+                                                @Model[item.i].User_EmployeeId
+                                                @Html.TextBoxFor(model => model[item.i].EmployeeId_Old, new { @id = "inputNationalId", @class = "form-control", @Value = item.value.User_EmployeeId, @type = "hidden" })
+                                            </td>
+                                            <td data-name="CompanyName">
+                                                @Model[item.i].SLM_Name
+                                                @Html.TextBoxFor(model => model[item.i].SLM_Name, new { @id = "inputCompany", @class = "form-control", @style = "font-size:1rem", @required = "required" })
+                                            </td>
+                                            <td data-name="Remark">
+                                                @Model[item.i].User_Remark
+                                                @Html.TextBoxFor(model => model[item.i].User_Remark, new { @id = "inputRemark", @class = "form-control", @style = "font-size:1rem" })
+                                            </td>
+                                            <td data-name="del">
+                                                <div type="button" name="del0" class='btn btn-danger glyphicon glyphicon-remove row-remove'><span aria-hidden="true">×</span></div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row m-4" style="display:flex;justify-content:center;align-items:center;">
+            <button class="btn btn-primary col-md-2 mr-3" type="submit">Update</button>
+            @*<a class="btn-secondary btn col-md-2 align-content-lg-end" href="/my-request">Back</a>*@
+            <a class="btn-secondary btn col-md-2 align-content-lg-end" href="javascript:void(0);" onclick="history.go(-1);">Back</a>
+        </div>
+    </div>
+}
+<style>
+    .table-sortable tbody tr {
+        cursor: move;
+    }
+</style>

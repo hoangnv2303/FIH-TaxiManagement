@@ -1,0 +1,183 @@
+﻿@model Visitor_Registration_Data.Model.CreateRequestModel
+
+@section jsFooter{
+    <script src="~/Content/js/xlsx.core.min.js"></script>
+    <script src="~/Content/js/RequestController/request-validate.js"></script>
+    <script src="~/Content/js/RequestController/request-table.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            // arrival date
+            $(".form_datetime").datepicker().datepicker("setDate", new Date());
+            $('.form_datetime').on('changeDate', function (ev) {
+                $(this).datepicker('hide');
+            });
+        });
+    </script>
+}
+@using (Html.BeginForm("CreateRequest", "Request", FormMethod.Post, new { enctype = "multipart/form-data", @id = "createRequest" }))
+{
+    @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fas fa-plus-square"></i>
+            Create Request
+        </div>
+        <div class="card-body">
+            <div class="form-horizontal">
+                <div class="alert alert-danger" role="alert" id="alertError" style="display:none;">
+                </div>
+                <!--Visitor information-->
+                <h5 class="font-weight-light">Request Information</h5>
+                <hr class="mt-0" />
+                <div class="row">
+                    <div class="form-group col-md-4">
+                        <label for="idRequests">Request Id</label>
+                        <input type="text" value="@Model.Id.ToString().Split('-').LastOrDefault()" class="form-control" id="idRequests" readonly>
+                        @Html.HiddenFor(model => model.Id)
+                        @Html.HiddenFor(model => model.EmployeeId)
+                        <!--for check national id -->
+                        <input type="hidden" id="checkNationalId" value="true">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Using date: <span class="text-danger">(*)</span></label>
+                        @Html.EditorFor(model => model.ScheduleTime, new { htmlAttributes = new { @class = "form-control form_datetime" } })
+                    </div>
+                </div>
+
+                <!--Pick up information-->
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="idRequests">Pickup: <span class="text-danger">(*)</span></label>
+                        <div class="input-group mb-3">
+                            @Html.EditorFor(model => model.Pickup, new { htmlAttributes = new { @class = "form-control", @required = "true" } })
+                            <div class="input-group-append btnFushan">
+                                <span class="input-group-text">
+                                    <i class="far fa-building"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <label for="idRequests">DropOff 1: <span class="text-danger">(*)</span></label>
+                        <div class="input-group mb-3">
+                            @Html.EditorFor(model => model.DropOff1, new { htmlAttributes = new { @class = "form-control", @required = "true" } })
+                            <div class="input-group-append btnFushan">
+                                <span class="input-group-text">
+                                    <i class="far fa-building"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <label>DropOff 2:</label>
+                        <div class="input-group mb-3">
+                            @Html.EditorFor(model => model.DropOff2, new { htmlAttributes = new { @class = "form-control"} })
+                            <div class="input-group-append btnFushan">
+                                <span class="input-group-text">
+                                    <i class="far fa-building"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Purpose and remark-->
+                <div class="row">
+                    <div class="col-md-6 mt-2">
+                        <label class="col-md-12 pl-0">Purpose: <span class="text-danger">(*) </span><span class="btnCountDown text-secondary">150</span></label>
+                        @Html.TextAreaFor(model => model.Purpose, new { @class = "form-control", @id = "inputPurposeVisit", @required = "true", @style = "max-width: 100%;width: 300%; height: 2.5rem;" })
+                        @Html.ValidationMessageFor(model => model.Purpose, "", new { @class = "text-danger" })
+                    </div>
+                    <div class="col-md-6 mt-2">
+                        <label class="col-md-12 pl-0">Remark: <span class="btnCountDown1 text-secondary">150</span></label>
+                        @Html.TextAreaFor(model => model.Remark, new { @class = "form-control", @id = "inputRemark123", @style = "max-width: 100%;width: 300%; height: 2.5rem;" })
+                        @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <h5 class="font-weight-light mt-4">User Infor</h5>
+                <hr class="mt-0" />
+                <div style="margin-bottom: 70px;">
+                    <a id="clear_CSV" class="btn btn-danger float-right text-white mr-2">Clear</a>
+                    <a id="import_CSV" class="btn btn-success float-right text-white mr-2">Import Excel</a>
+                    <a id="download_CSV" class="btn btn-light float-right mr-2"><i class="fas fa-download fa-fw"></i></a>
+                    <a id="myInfor" data-id="@Model.EmployeeId" data-name="@Model.FullName" data-slm="@Model.SLM" class="btn btn-light float-right mr-2"><i class="fas fa-user fa-fw"></i></a>
+                    <input type="file" name="filename" id="filename" hidden />
+                </div>
+                <!--Import list CSV-->
+                <div id="employee_table" class="table-responsive">
+                </div>
+                <div id="singleRow">
+                    <div class="form-row clearfix">
+                        <div class="col-md-12 table-responsive">
+                            <table class="table table-bordered table-hover table-sortable" id="tab_logic">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">
+                                            Full Name <span class="text-danger">(*)</span>
+                                        </th>
+                                        <th class="text-center">
+                                            Employee Id <span class="text-danger">(*)</span>
+                                        </th>
+                                        <th class="text-center">
+                                            SLM Name <span class="text-danger">(*)</span>
+                                        </th>
+                                        <th class="text-center">
+                                            Remark
+                                        </th>
+                                        <th class="text-center" style="border-top: 1px solid #ffffff; border-right: 1px solid #ffffff;">
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr id='addr0' data-id="0" class="hidden">
+                                        <td data-name="Name">
+                                            @Html.EditorFor(model => model.Visitor[0].Name, new { htmlAttributes = new { @class = "form-control", @id = "inputNameBox", @required = "true" } })
+                                            @Html.ValidationMessageFor(model => model.Visitor[0].Name, "", new { @class = "text-danger" })
+                                        </td>
+                                        <td data-name="EmployeeId">
+                                            @Html.EditorFor(model => model.Visitor[0].EmployeeId, new { htmlAttributes = new { @class = "form-control", @id = "inputNationalId", @required = "true" } })
+                                            @Html.ValidationMessageFor(model => model.Visitor[0].EmployeeId, "", new { @class = "text-danger" })
+                                        </td>
+                                        <td data-name="SLM_Name">
+                                            @Html.EditorFor(model => model.Visitor[0].SLM_Name, new { htmlAttributes = new { @class = "form-control", @id = "inputCompany", @required = "true" } })
+                                            @Html.ValidationMessageFor(model => model.Visitor[0].SLM_Name, "", new { @class = "text-danger" })
+                                        </td>
+                                        <td data-name="Remark">
+                                            @Html.TextAreaFor(model => model.Visitor[0].Remark, new { @class = "form-control", @id = "inputRemark", @style = "max-width: 100%; height: 2.5rem;" })
+                                            @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                                        </td>
+                                        <td data-name="del" style="display:none">
+                                            <button name="del0" class='btn btn-danger glyphicon glyphicon-remove row-remove'><span aria-hidden="true">×</span></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <a id="add_row" class="btn btn-primary float-right text-white">Add Row</a>
+                </div>
+                @Html.HiddenFor(model => model.ListVisitorCSV, new { @id = "listVisitor" })
+
+                <!--Approver information-->
+                <h5 class="font-weight-light mt-4">Approver Information</h5>
+                <hr class="mt-0" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <label>Approver Name: <b> @ViewBag.ApproverName</b></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row m-4" style="display:flex;justify-content:center;align-items:center;">
+            <button class="btn btn-primary col-md-2 mr-3" type="submit" id="submit">Create</button>
+            <button class="btn btn-danger col-md-2 align-content-lg-end" type="reset">Clear</button>
+        </div>
+    </div>
+}
+<style>
+    .table-sortable tbody tr {
+        cursor: move;
+    }
+</style>

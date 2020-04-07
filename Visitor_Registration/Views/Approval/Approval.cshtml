@@ -1,0 +1,87 @@
+﻿@model Visitor_Registration.Models.ApprovalModel
+@{
+    ViewBag.Title = "Approval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var listRequests = ViewBag.ListRequests as List<Visitor_Registration_Data.Model.RequestInforModel>;
+}
+
+@section jsFooter {
+    <script src="~/Content/js/ApprovalController/load-approval.js"></script>
+}
+@using (Html.BeginForm("Approval", "Approval", FormMethod.Post, new { enctype = "multipart/form-data", @id = "approval" }))
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <div class="col-md-10">
+                <i class="fas fa-table"></i>
+                List Requests
+            </div>
+        </div>
+        <div class="card-body" style="zoom:90%">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0"
+                       style="table-layout: fixed;word-wrap:break-word;">
+                    <thead>
+                        <tr>
+                            <th style="width: 1rem;">#</th>
+                            <th style="width: 6rem;">Request Id</th>
+                            <th>Requester Name</th>
+                            <th>Dept.</th>
+                            <th style="width: 13rem;">Purpose</th>
+                            <th style="width: 5rem;">Using Date</th>
+                            <th style="width: 5rem;">Approval</th>
+                            <th style="width: 5rem;">Rejection</th>
+                            <th style="width: 5rem;">Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.listRequests != null)
+                        {
+                            var stt = 0;
+                            foreach (var item in listRequests.Select((value, i) => new { i, value }))
+                            {
+                                <tr class="btnDetail" data-id="@item.value.Id">
+                                    <td></td>
+                                    <td><a class="@(item.value.Process == 2 ? "text-danger" : "text-primary")" href="/request-detail/@(item.value.Id)/1">@item.value.Id.ToString().Split('-').LastOrDefault()</a> </td>
+                                    <td>@item.value.FullName</td>
+                                    <td>@item.value.DeparmentName</td>
+                                    <td>@item.value.Purpose</td>
+                                    <td>@item.value.ScheduleTime.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="customRadioInline1+@item.value.Id" name="customRadioInline1+@item.value.Id" class="custom-control-input event-radio" data-id="@item.value.Id">
+                                            <label class="custom-control-label text-success font-weight-bold" for="customRadioInline1+@item.value.Id">Approve</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" id="customRadioInline2+@item.value.Id" name="customRadioInline1+@item.value.Id" class="custom-control-input event-radio" data-id="@item.value.Id" data-type="false">
+                                            <label class="custom-control-label text-danger font-weight-bold" for="customRadioInline2+@item.value.Id">Reject</label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @Html.TextAreaFor(model => model.approval[item.i].comment, new { @class = "form-control", @id = "comment" + item.value.Id })
+                                        @Html.ValidationMessageFor(model => model.approval[item.i].comment, "", new { @class = "text-danger" })
+                                        @Html.HiddenFor(model => model.approval[item.i].Id, new { @Value = item.value.Id })
+                                        @Html.HiddenFor(model => model.approval[item.i].process, new { @Value = item.value.Process })
+                                        <input class="typeApproval" id="@item.value.Id" name="approval[@item.i].type" type="hidden">
+                                    </td>
+                                </tr>
+                                stt++;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <!--Approval Infor mation-->
+            <div class="row" style="display:flex; justify-content:center">
+                <div class="col-2">
+                    <input type="submit" class="btn btn-block btn-primary" value="Submit" />
+                </div>
+                <div class="col-2">
+                    <input type="button" class="btn btn-block btn-danger btnReset" value="Reset" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
